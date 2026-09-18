@@ -49,15 +49,8 @@ jobs:
         uses: semgrep/semgrep-action@v1
         with:
           config: "p/default"
-          generateSarif: "1"
+          args: "--sarif --output=semgrep.sarif"
         continue-on-error: true
-
-      - name: Upload Semgrep Scan Results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always() # Garante o upload mesmo se encontrar vulnerabilidades
-        with:
-          sarif_file: semgrep.sarif
-          category: semgrep
 
       # 3. Trivy FS (Configurado para gerar trivy-fs-results.sarif)
       - name: 3. SCA Scanning (Trivy Filesystem)
