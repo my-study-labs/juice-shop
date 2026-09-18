@@ -23,7 +23,7 @@ jobs:
   security-scans:
     runs-on: ubuntu-latest
     
-    # PERMISSÃO OBRIGATÓRIA: Necessária para injetar os alertas na aba Security do GitHub
+    # PERMISSÕES OBRIGATÓRIAS: Essencial ter "write" em security-events para o upload funcionar
     permissions:
       security-events: write
       issues: write
@@ -32,56 +32,101 @@ jobs:
     
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necessário para o Gitleaks analisar todo o histórico
+          fetch-depth: 0 
 
+      # 1. Gitleaks (Gera SARIF nativamente e faz upload automático por padrão)
       - name: 1. Secret Scanning (Gitleaks)
-        uses: gitleaks/gitleaks-action@v3
+        uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
         continue-on-error: true
 
+      # 2. Semgrep (Configurado para gerar semgrep.sarif)
       - name: 2. SAST Scanning (Semgrep)
-        uses: returntocorp/semgrep-action@v1
+        uses: semgrep/semgrep-action@v1
         with:
           config: "p/default"
+          generateSarif: "1"
         continue-on-error: true
 
+      - name: Upload Semgrep Scan Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() # Garante o upload mesmo se encontrar vulnerabilidades
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+      # 3. Trivy FS (Configurado para gerar trivy-fs-results.sarif)
       - name: 3. SCA Scanning (Trivy Filesystem)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.29.0
         with:
           scan-type: 'fs'
+          scan-ref: '.'
           ignore-unfixed: true
-          format: 'table'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
           severity: 'CRITICAL,HIGH'
         continue-on-error: true
 
+      - name: Upload Trivy FS Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-fs
+
+      # 4. Checkov (Configurado para gerar resultados em SARIF)
       - name: 4. IaC Scanning (Checkov)
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
           framework: terraform,kubernetes
+          output_format: sarif
+          output_file_path: checkov.sarif
         continue-on-error: true
+
+      - name: Upload Checkov Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov.sarif
+          category: checkov
 
   container-and-dast:
     needs: security-scans
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker Image
         run: docker build -t my-app:latest .
 
+      # 5. Trivy Image (Configurado para gerar trivy-image-results.sarif)
       - name: 5. Container Scanning (Trivy Image)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.29.0
         with:
+          scan-type: 'image'
           image-ref: 'my-app:latest'
-          format: 'table'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
           severity: 'CRITICAL,HIGH'
         continue-on-error: true
+
+      - name: Upload Trivy Image Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-image-results.sarif
+          category: trivy-image
 
       - name: Run Application for DAST
         run: docker run -d -p 3000:3000 my-app:latest
@@ -89,8 +134,9 @@ jobs:
       - name: Wait for app to start
         run: sleep 15
 
+      # 6. DAST Scanning (OWASP ZAP - Mantido o comportamento padrão de relatório HTML/Markdown)
       - name: 6. DAST Scanning (OWASP ZAP)
-        uses: zaproxy/action-baseline@v0.15.0
+        uses: zaproxy/action-baseline@v0.14.0
         with:
           target: 'http://localhost:3000'
-          fail_action: false # Não falhar o build no lab
+          fail_action: false
