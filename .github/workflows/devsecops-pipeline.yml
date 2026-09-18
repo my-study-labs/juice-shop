@@ -61,7 +61,7 @@ jobs:
 
       # 3. Trivy FS (Configurado para gerar trivy-fs-results.sarif)
       - name: 3. SCA Scanning (Trivy Filesystem)
-        uses: aquasecurity/trivy-action@v0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
