@@ -25,7 +25,8 @@ jobs:
     
     # PERMISSÃO OBRIGATÓRIA: Necessária para injetar os alertas na aba Security do GitHub
     permissions:
-      security-events: write 
+      security-events: write
+      issues: write
       actions: read
       contents: read
     
