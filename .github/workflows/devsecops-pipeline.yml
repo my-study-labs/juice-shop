@@ -1,8 +1,3 @@
-Aqui está a estrutura do pipeline atualizada.
-
-Agrupei as etapas de **Container Scanning** e **DAST** no mesmo *job* (agora chamado `job-5-container-and-dast`) para que aproveitem a mesma imagem Docker construída. Além disso, incluí a numeração sequencial (de 1 a 6) tanto no identificador/nome dos *jobs* quanto nos nomes dos *steps* (etapas), mantendo a indicação de CI e CD e as dependências (`needs`) entre cada fase.
-
-```yaml
 name: DevSecOps Lab Pipeline
 
 on:
