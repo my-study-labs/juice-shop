@@ -112,7 +112,7 @@ jobs:
 
       # 5. Trivy Image (Configurado para gerar trivy-image-results.sarif)
       - name: 5. Container Scanning (Trivy Image)
-        uses: aquasecurity/trivy-action@v0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'image'
           image-ref: 'my-app:latest'
