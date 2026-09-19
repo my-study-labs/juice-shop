@@ -45,7 +45,7 @@ jobs:
     name: 2. CI - SAST Scanning
     needs: job-1-secret-scanning
     runs-on: ubuntu-latest
-    Container:
+    container:
       image: semgrep/semgrep:latest
     permissions:
       security-events: write
@@ -57,10 +57,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 2. CI - SAST Scanning (Semgrep)
-        run: semgrep ci
-        with:
-          config: "p/default"
-          generateSarif: "1" # Este parâmetro nativo gera automaticamente o arquivo semgrep.sarif
+        # Corrigido: 'run' executa o comando e os parâmetros vão na mesma linha (sem 'with')
+        run: semgrep scan --config="p/default" --sarif --output=semgrep.sarif
         continue-on-error: true
 
       # Adicione esta etapa logo abaixo para garantir que o resultado apareça na aba "Security" do GitHub
