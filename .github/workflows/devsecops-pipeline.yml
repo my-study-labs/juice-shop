@@ -58,8 +58,16 @@ jobs:
         uses: semgrep/semgrep-action@v1
         with:
           config: "p/default"
-          args: "--sarif --output=semgrep.sarif"
+          generateSarif: "1" # Este parâmetro nativo gera automaticamente o arquivo semgrep.sarif
         continue-on-error: true
+
+      # Adicione esta etapa logo abaixo para garantir que o resultado apareça na aba "Security" do GitHub
+      - name: Upload Semgrep Results
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
 
   job-3-sca-scanning:
     name: 3. CI - SCA Scanning
