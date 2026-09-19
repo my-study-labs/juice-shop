@@ -59,6 +59,8 @@ jobs:
       - name: 2. CI - SAST Scanning (Semgrep)
         # Corrigido: 'run' executa o comando e os parâmetros vão na mesma linha (sem 'with')
         run: semgrep scan --config="p/default" --sarif --output=semgrep.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       # Adicione esta etapa logo abaixo para garantir que o resultado apareça na aba "Security" do GitHub
@@ -91,6 +93,8 @@ jobs:
           format: 'sarif'
           output: 'trivy-fs-results.sarif'
           severity: 'CRITICAL,HIGH'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Upload Trivy FS Results
@@ -120,6 +124,8 @@ jobs:
           framework: terraform,kubernetes
           output_format: sarif
           output_file_path: checkov.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Upload Checkov Results
@@ -156,6 +162,8 @@ jobs:
           format: 'sarif'
           output: 'trivy-image-results.sarif'
           severity: 'CRITICAL,HIGH'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Upload Trivy Image Results
@@ -177,3 +185,5 @@ jobs:
         with:
           target: 'http://localhost:3000'
           fail_action: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
