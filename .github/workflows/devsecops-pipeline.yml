@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-        continue-on-error: true
+        # continue-on-error: true
 
   job-2-sast-scanning:
     name: 2. CI - SAST Scanning
@@ -61,7 +61,7 @@ jobs:
         run: semgrep scan --config="p/default" --sarif --output=semgrep.sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+        # continue-on-error: true
 
       # Adicione esta etapa logo abaixo para garantir que o resultado apareça na aba "Security" do GitHub
       - name: Upload Semgrep Results
@@ -95,7 +95,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+        # continue-on-error: true
 
       - name: Upload Trivy FS Results
         uses: github/codeql-action/upload-sarif@v4
@@ -126,7 +126,7 @@ jobs:
           output_file_path: checkov.sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+        # continue-on-error: true
 
       - name: Upload Checkov Results
         uses: github/codeql-action/upload-sarif@v4
@@ -164,7 +164,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
+        # continue-on-error: true
 
       - name: Upload Trivy Image Results
         uses: github/codeql-action/upload-sarif@v4
@@ -184,6 +184,6 @@ jobs:
         uses: zaproxy/action-baseline@v0.15.0
         with:
           target: 'http://localhost:3000'
-          fail_action: false
+          fail_action: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
