@@ -45,6 +45,8 @@ jobs:
     name: 2. CI - SAST Scanning
     needs: job-1-secret-scanning
     runs-on: ubuntu-latest
+    Container:
+      image: semgrep/semgrep:latest
     permissions:
       security-events: write
       issues: write
@@ -55,7 +57,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 2. CI - SAST Scanning (Semgrep)
-        uses: semgrep/semgrep-action@v1.177.0
+        run: semgrep ci
         with:
           config: "p/default"
           generateSarif: "1" # Este parâmetro nativo gera automaticamente o arquivo semgrep.sarif
